@@ -1,0 +1,239 @@
+@prefix em:   <https://mypokemon.org/emerald/ontology#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix poke: <https://pokemonkg.org/ontology#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+<https://mypokemon.org/emerald/ontology>
+    a owl:Ontology ;
+    rdfs:label "Pokémon Emerald game ontology (v0.1)" ;
+    rdfs:comment """Scoped to what a Generation III agent needs: the static game
+data extracted from the Pokémon Emerald ROM, plus the live state of a playthrough.
+Static individuals are keyed on the game's internal IDs, not Pokédex numbers.""" ;
+    owl:versionInfo "0.1" .
+
+################################################################################
+# Static layer — the game's own data
+################################################################################
+
+em:Species a owl:Class ;
+    rdfs:label "Species" ;
+    rdfs:comment "A Pokémon species as defined by the ROM's gSpeciesInfo table." ;
+    skos:closeMatch poke:Species .
+
+em:Type a owl:Class ;
+    rdfs:label "Type" ;
+    skos:closeMatch poke:Type .
+
+em:DamageClass a owl:Class ;
+    rdfs:label "Damage class" ;
+    rdfs:comment "Physical or special. In Generation III this is a property of the move's type, not of the move." .
+
+em:Move a owl:Class ;
+    rdfs:label "Move" ;
+    skos:closeMatch poke:Move .
+
+em:MoveEffect a owl:Class ;
+    rdfs:label "Move effect" ;
+    rdfs:comment "The battle-script effect constant a move triggers, e.g. EFFECT_FLINCH_HIT." .
+
+em:Ability a owl:Class ;
+    rdfs:label "Ability" ;
+    skos:closeMatch poke:Ability .
+
+em:Item a owl:Class ;
+    rdfs:label "Item" ;
+    skos:closeMatch poke:Item .
+
+em:Machine a owl:Class ;
+    rdfs:label "TM or HM" ;
+    rdfs:comment "A teachable machine, linked to the move it teaches." .
+
+em:TypeMatchup a owl:Class ;
+    rdfs:label "Type matchup" ;
+    rdfs:comment "Reified: attacking type, defending type and a multiplier. From gTypeEffectiveness." .
+
+em:LearnsetEntry a owl:Class ;
+    rdfs:label "Learnset entry" ;
+    rdfs:comment "Reified: a species learns a move by some method, optionally at a level or via a machine." .
+
+em:LearnMethod a owl:Class ;
+    rdfs:label "Learn method" .
+
+em:Evolution a owl:Class ;
+    rdfs:label "Evolution" ;
+    rdfs:comment "Reified: source species, target species, trigger and its parameter." .
+
+em:EvolutionTrigger a owl:Class ;
+    rdfs:label "Evolution trigger" .
+
+em:Location a owl:Class ;
+    rdfs:label "Location" ;
+    rdfs:comment "A map in the game, keyed on its MAP_ constant." ;
+    skos:closeMatch poke:Place .
+
+em:EncounterSlot a owl:Class ;
+    rdfs:label "Encounter slot" ;
+    rdfs:comment "Reified: a species encounterable at a location by a method, within a level range, at a rate." .
+
+em:EncounterMethod a owl:Class ;
+    rdfs:label "Encounter method" .
+
+em:Trainer a owl:Class ;
+    rdfs:label "Trainer" ;
+    skos:closeMatch poke:Trainer .
+
+em:TrainerPartyMember a owl:Class ;
+    rdfs:label "Trainer party member" ;
+    rdfs:comment "A species at a level in a trainer's team, with moves and held item when the ROM specifies them." .
+
+# --- species properties
+em:hasType          a owl:ObjectProperty ; rdfs:domain em:Species ; rdfs:range em:Type ; skos:closeMatch poke:hasType .
+em:mayHaveAbility   a owl:ObjectProperty ; rdfs:domain em:Species ; rdfs:range em:Ability ; skos:closeMatch poke:mayHaveAbility .
+em:internalId       a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:comment "Index used in RAM and ROM tables, for species and for moves. A species internal ID is not a Pokédex number: 252-276 are unused slots and Hoenn starts at 277." .
+em:nationalDexNumber a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:integer .
+em:hoennDexNumber   a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:integer .
+em:baseHP           a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:integer .
+em:baseAttack       a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:integer .
+em:baseDefense      a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:integer .
+em:baseSpeed        a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:integer .
+em:baseSpAttack     a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:integer .
+em:baseSpDefense    a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:integer .
+em:catchRate        a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:integer .
+em:growthRate       a owl:DatatypeProperty ; rdfs:domain em:Species ; rdfs:range xsd:string .
+
+# --- move properties
+em:moveType         a owl:ObjectProperty ; rdfs:domain em:Move ; rdfs:range em:Type .
+em:hasEffect        a owl:ObjectProperty ; rdfs:domain em:Move ; rdfs:range em:MoveEffect .
+em:damageClass      a owl:ObjectProperty ; rdfs:domain em:Type ; rdfs:range em:DamageClass ;
+    rdfs:comment "Generation III: the type decides whether a move is physical or special." .
+em:basePower        a owl:DatatypeProperty ; rdfs:domain em:Move ; rdfs:range xsd:integer ; skos:closeMatch poke:basePower .
+em:accuracy         a owl:DatatypeProperty ; rdfs:domain em:Move ; rdfs:range xsd:integer ; skos:closeMatch poke:accuracy .
+em:basePP           a owl:DatatypeProperty ; rdfs:domain em:Move ; rdfs:range xsd:integer .
+em:priority         a owl:DatatypeProperty ; rdfs:domain em:Move ; rdfs:range xsd:integer .
+em:secondaryEffectChance a owl:DatatypeProperty ; rdfs:domain em:Move ; rdfs:range xsd:integer .
+em:makesContact     a owl:DatatypeProperty ; rdfs:domain em:Move ; rdfs:range xsd:boolean .
+em:teachesMove      a owl:ObjectProperty ; rdfs:domain em:Machine ; rdfs:range em:Move .
+
+# --- type matchups
+em:attackingType    a owl:ObjectProperty ; rdfs:domain em:TypeMatchup ; rdfs:range em:Type .
+em:defendingType    a owl:ObjectProperty ; rdfs:domain em:TypeMatchup ; rdfs:range em:Type .
+em:multiplier       a owl:DatatypeProperty ; rdfs:domain em:TypeMatchup ; rdfs:range xsd:decimal ;
+    rdfs:comment "0, 0.5 or 2. Neutral matchups are not stored." .
+
+# --- learnsets, evolution, encounters, trainers
+em:learnsetOf       a owl:ObjectProperty ; rdfs:domain em:LearnsetEntry ; rdfs:range em:Species .
+em:learnsMove       a owl:ObjectProperty ; rdfs:domain em:LearnsetEntry ; rdfs:range em:Move ; skos:closeMatch poke:learnsMove .
+em:learnMethod      a owl:ObjectProperty ; rdfs:domain em:LearnsetEntry ; rdfs:range em:LearnMethod .
+em:atLevel          a owl:DatatypeProperty ; rdfs:domain em:LearnsetEntry ; rdfs:range xsd:integer .
+em:viaMachine       a owl:ObjectProperty ; rdfs:domain em:LearnsetEntry ; rdfs:range em:Machine .
+
+em:evolutionOf      a owl:ObjectProperty ; rdfs:domain em:Evolution ; rdfs:range em:Species .
+em:evolvesInto      a owl:ObjectProperty ; rdfs:domain em:Evolution ; rdfs:range em:Species .
+em:trigger          a owl:ObjectProperty ; rdfs:domain em:Evolution ; rdfs:range em:EvolutionTrigger .
+em:triggerParameter a owl:DatatypeProperty ; rdfs:domain em:Evolution ; rdfs:range xsd:string .
+
+em:atLocation       a owl:ObjectProperty ; rdfs:domain em:EncounterSlot ; rdfs:range em:Location .
+em:encounterSpecies a owl:ObjectProperty ; rdfs:domain em:EncounterSlot ; rdfs:range em:Species .
+em:encounterMethod  a owl:ObjectProperty ; rdfs:domain em:EncounterSlot ; rdfs:range em:EncounterMethod .
+em:minLevel         a owl:DatatypeProperty ; rdfs:domain em:EncounterSlot ; rdfs:range xsd:integer .
+em:maxLevel         a owl:DatatypeProperty ; rdfs:domain em:EncounterSlot ; rdfs:range xsd:integer .
+em:encounterRate    a owl:DatatypeProperty ; rdfs:domain em:EncounterSlot ; rdfs:range xsd:decimal .
+
+em:hasPartyMember   a owl:ObjectProperty ; rdfs:domain em:Trainer ; rdfs:range em:TrainerPartyMember .
+em:memberSpecies    a owl:ObjectProperty ; rdfs:domain em:TrainerPartyMember ; rdfs:range em:Species .
+em:memberLevel      a owl:DatatypeProperty ; rdfs:domain em:TrainerPartyMember ; rdfs:range xsd:integer .
+em:memberKnowsMove  a owl:ObjectProperty ; rdfs:domain em:TrainerPartyMember ; rdfs:range em:Move .
+em:trainerClass     a owl:DatatypeProperty ; rdfs:domain em:Trainer ; rdfs:range xsd:string .
+
+################################################################################
+# Live layer — one playthrough
+################################################################################
+
+em:Player a owl:Class ;
+    rdfs:label "Player" ;
+    rdfs:comment "One agent's save file. The grounded and the parametric agent are distinct players." .
+
+em:PokemonInstance a owl:Class ;
+    rdfs:label "Pokémon instance" ;
+    rdfs:comment "An individual Pokémon in a party or box, distinct from its species." ;
+    skos:closeMatch poke:Pokémon .
+
+em:MoveSlot a owl:Class ;
+    rdfs:label "Move slot" ;
+    rdfs:comment "One of up to four moves known by an instance, with its remaining PP." .
+
+em:Badge a owl:Class ; rdfs:label "Badge" .
+em:ItemStack a owl:Class ; rdfs:label "Item stack" ; rdfs:comment "A quantity of an item in a player's bag." .
+em:Battle a owl:Class ; rdfs:label "Battle" .
+
+em:GameEvent a owl:Class ;
+    rdfs:label "Game event" ;
+    rdfs:comment "Something that happened during a playthrough, appended to the event graph and never rewritten." ;
+    rdfs:subClassOf prov:Activity .
+em:BattleEvent a owl:Class ; rdfs:label "Battle event" ; rdfs:subClassOf em:GameEvent .
+em:DamageEvent a owl:Class ; rdfs:label "Damage event" ; rdfs:subClassOf em:BattleEvent .
+em:FaintEvent a owl:Class ; rdfs:label "Faint event" ; rdfs:subClassOf em:BattleEvent .
+em:CatchEvent a owl:Class ; rdfs:label "Catch event" ; rdfs:subClassOf em:GameEvent .
+em:LevelUpEvent a owl:Class ; rdfs:label "Level up event" ; rdfs:subClassOf em:GameEvent .
+em:MoveLearnedEvent a owl:Class ; rdfs:label "Move learned event" ; rdfs:subClassOf em:GameEvent .
+em:StatusEvent a owl:Class ; rdfs:label "Status event" ; rdfs:subClassOf em:GameEvent .
+em:Observation a owl:Class ;
+    rdfs:label "Observation" ;
+    rdfs:comment "A reading of game state at a frame. Live triples are attached to one of these for provenance." ;
+    rdfs:subClassOf prov:Activity .
+
+em:ownedBy          a owl:ObjectProperty ; rdfs:domain em:PokemonInstance ; rdfs:range em:Player .
+em:instanceOf       a owl:ObjectProperty ; rdfs:domain em:PokemonInstance ; rdfs:range em:Species .
+em:personality      a owl:DatatypeProperty ; rdfs:domain em:PokemonInstance ; rdfs:range xsd:integer ;
+    rdfs:comment "Personality value: stable identifier of an individual across observations." .
+em:nickname         a owl:DatatypeProperty ; rdfs:domain em:PokemonInstance ; rdfs:range xsd:string .
+em:partySlot        a owl:DatatypeProperty ; rdfs:domain em:PokemonInstance ; rdfs:range xsd:integer .
+em:level            a owl:DatatypeProperty ; rdfs:domain em:PokemonInstance ; rdfs:range xsd:integer .
+em:currentHP        a owl:DatatypeProperty ; rdfs:domain em:PokemonInstance ; rdfs:range xsd:integer .
+em:maxHP            a owl:DatatypeProperty ; rdfs:domain em:PokemonInstance ; rdfs:range xsd:integer .
+em:statusCondition  a owl:DatatypeProperty ; rdfs:domain em:PokemonInstance ; rdfs:range xsd:string .
+em:hasAbility       a owl:ObjectProperty ; rdfs:domain em:PokemonInstance ; rdfs:range em:Ability .
+em:holdsItem        a owl:ObjectProperty ; rdfs:domain em:PokemonInstance ; rdfs:range em:Item .
+em:hasMoveSlot      a owl:ObjectProperty ; rdfs:domain em:PokemonInstance ; rdfs:range em:MoveSlot .
+em:slotMove         a owl:ObjectProperty ; rdfs:domain em:MoveSlot ; rdfs:range em:Move .
+em:remainingPP      a owl:DatatypeProperty ; rdfs:domain em:MoveSlot ; rdfs:range xsd:integer .
+
+em:currentLocation  a owl:ObjectProperty ; rdfs:domain em:Player ; rdfs:range em:Location .
+em:hasBadge         a owl:ObjectProperty ; rdfs:domain em:Player ; rdfs:range em:Badge .
+em:carries          a owl:ObjectProperty ; rdfs:domain em:Player ; rdfs:range em:ItemStack .
+em:stackItem        a owl:ObjectProperty ; rdfs:domain em:ItemStack ; rdfs:range em:Item .
+em:quantity         a owl:DatatypeProperty ; rdfs:domain em:ItemStack ; rdfs:range xsd:integer .
+
+em:observedAtFrame  a owl:DatatypeProperty ; rdfs:domain em:Observation ; rdfs:range xsd:integer .
+em:atFrame          a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:comment "Emulator frame an event was first seen at. Used on events; observations use em:observedAtFrame." .
+em:subjectInstance  a owl:ObjectProperty ; rdfs:range em:PokemonInstance ;
+    rdfs:comment "The Pokémon an event is about." .
+em:previousValue    a owl:DatatypeProperty ; rdfs:comment "Value before the change an event records." .
+em:newValue         a owl:DatatypeProperty ; rdfs:comment "Value after the change an event records." .
+em:observedPlayer   a owl:ObjectProperty ; rdfs:domain em:Observation ; rdfs:range em:Player .
+em:battleTurn       a owl:DatatypeProperty ; rdfs:domain em:BattleEvent ; rdfs:range xsd:integer .
+em:usedMove         a owl:ObjectProperty ; rdfs:domain em:BattleEvent ; rdfs:range em:Move .
+em:eventActor       a owl:ObjectProperty ; rdfs:domain em:BattleEvent ; rdfs:range em:PokemonInstance .
+em:eventTarget      a owl:ObjectProperty ; rdfs:domain em:BattleEvent ; rdfs:range em:PokemonInstance .
+em:damageDealt      a owl:DatatypeProperty ; rdfs:domain em:BattleEvent ; rdfs:range xsd:integer .
+
+################################################################################
+# Fixed individuals
+################################################################################
+
+em:Physical a em:DamageClass ; rdfs:label "physical" .
+em:Special  a em:DamageClass ; rdfs:label "special" .
+
+em:LevelUp  a em:LearnMethod ; rdfs:label "level up" .
+em:MachineTaught a em:LearnMethod ; rdfs:label "TM or HM" .
+
+em:LandEncounter      a em:EncounterMethod ; rdfs:label "tall grass or cave" .
+em:WaterEncounter     a em:EncounterMethod ; rdfs:label "surfing" .
+em:RockSmashEncounter a em:EncounterMethod ; rdfs:label "rock smash" .
+em:FishingEncounter   a em:EncounterMethod ; rdfs:label "fishing" .
